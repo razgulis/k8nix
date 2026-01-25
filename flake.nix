@@ -10,11 +10,16 @@
 
   outputs = { self, nixpkgs, nixos-hardware, agenix }:
     let
-      system = "aarch64-linux";
+      # Target platform for the Raspberry Pi images.
+      targetSystem = "aarch64-linux";
+
+      # Shell tooling should be available on common dev hosts too.
+      devSystems = [ "x86_64-linux" "aarch64-linux" ];
+      forAllSystems = f: nixpkgs.lib.genAttrs devSystems (system: f system);
 
       mkHost = { hostName, roleModule }:
         nixpkgs.lib.nixosSystem {
-          inherit system;
+          system = targetSystem;
           specialArgs = { inherit hostName; };
 
           modules = [
@@ -39,13 +44,10 @@
         pi-worker-4-hdd = mkHost { hostName = "pi-worker-4-hdd"; roleModule = ./modules/k3s/agent.nix; };
       };
 
-      # Optional but very convenient: a devShell with the CLI
-      devShells.${system}.default =
-        nixpkgs.legacyPackages.${system}.mkShell {
-          packages = [
-            agenix.packages.${system}.default
-          ];
+      devShells = forAllSystems (system: {
+        default = nixpkgs.legacyPackages.${system}.mkShell {
+          packages = [ agenix.packages.${system}.default ];
         };
+      });
     };
 }
-
