@@ -39,10 +39,18 @@ The image appears in `./result/sd-image/`.
 4) Flash the image (example):
 
 ```bash
+lsblk
+sudo umount /dev/sdX1 /dev/sdX2 2>/dev/null || true
 sudo dd if=./result/sd-image/nixos-pi-master-1.img of=/dev/sdX bs=4M status=progress conv=fsync
+sync
 ```
 
 5) Boot the Pi, then repeat for each worker.
+
+Note: flash to the whole device (e.g. `/dev/sda`), not a partition (e.g. `/dev/sda1`).
+
+## SSH access
+- Default user is `admin` (key-based auth; password login is disabled). Update the SSH key and Home Manager defaults in `modules/base.nix`.
 
 ## Cluster bootstrap notes
 - The k3s token is read from `/etc/k3s/token`.
@@ -61,3 +69,4 @@ nix develop
 - Update k3s flags in `modules/k3s/server.nix` or `modules/k3s/agent.nix`.
 - If you want DHCP instead of static IPs, flip the commented settings in
   `modules/networking.nix`.
+_

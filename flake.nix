@@ -6,9 +6,13 @@
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
     agenix.url = "github:ryantm/agenix";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, agenix }:
+  outputs = { self, nixpkgs, nixos-hardware, agenix, home-manager }:
     let
       # Target platform for the Raspberry Pi images.
       targetSystem = "aarch64-linux";
@@ -25,6 +29,7 @@
           modules = [
             nixos-hardware.nixosModules.raspberry-pi-4
             agenix.nixosModules.default
+            home-manager.nixosModules.home-manager
 
             ./modules/base.nix
             ./modules/networking.nix

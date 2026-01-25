@@ -18,14 +18,15 @@ in
   # Prefer networkd on servers
   networking.useNetworkd = true;
   systemd.network.enable = true;
+  networking.useDHCP = false;
 
-  # Assuming wired ethernet is `end0` (common on Pi 4 NixOS).
+  # Wired ethernet is commonly `end0` on NixOS Pi images, but may be `eth0`
+  # depending on predictable interface naming.
   systemd.network.networks."10-lan" = {
-    # DHCP assigned IPs
-    #matchConfig.Name = "end0";
-    #networkConfig.DHCP = "yes";
-    
-    # If you want fully static IPs per node instead:
+    matchConfig.Name = "end0 eth0";
+    # Static per-node IPs (default for this repo). To use DHCP instead, comment
+    # out `address`/`gateway`/`dns` and set `networkConfig.DHCP = "yes";`.
+    networkConfig.DHCP = "no";
     address = [ "${nodes.${config.networking.hostName}}/24" ];
     gateway = [ "192.168.1.1" ];
     #dns = [ "192.168.1.200" ];
@@ -58,4 +59,3 @@ in
     ];
   };
 }
-
