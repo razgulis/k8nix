@@ -27,10 +27,12 @@ in
     # Static per-node IPs (default for this repo). To use DHCP instead, comment
     # out `address`/`gateway`/`dns` and set `networkConfig.DHCP = "yes";`.
     networkConfig.DHCP = "no";
+    # Advertise `${networking.hostName}.local` via mDNS (systemd-resolved).
+    networkConfig.MulticastDNS = "yes";
     address = [ "${nodes.${config.networking.hostName}}/24" ];
     gateway = [ "192.168.1.1" ];
-    #dns = [ "192.168.1.200" ];
-    dns = [ "192.168.1.1" ];
+    # Prefer the cluster DNS (Blocky) when available, but fall back to the gateway.
+    dns = [ masterIP "192.168.1.1" ];
   };
 
   # Simple name resolution without depending on LAN DNS
@@ -51,6 +53,7 @@ in
 
     allowedUDPPorts = [
       8472    # flannel VXLAN
+      5353    # mDNS (hostname.local discovery)
     ];
 
     # NodePort range (optional, but convenient on bare metal)

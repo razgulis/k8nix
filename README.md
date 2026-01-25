@@ -52,6 +52,13 @@ Note: flash to the whole device (e.g. `/dev/sda`), not a partition (e.g. `/dev/s
 ## SSH access
 - Default user is `admin` (key-based auth; password login is disabled). Update the SSH key and Home Manager defaults in `modules/base.nix`.
 
+## Name resolution
+- Nodes advertise `*.local` via mDNS (e.g. `pi-master-1.local`) and can be reached by name on clients that support mDNS.
+
+## DNS (Blocky)
+- `pi-master-1` runs `blocky` and listens on port `53` (TCP/UDP).
+- The `systemd-resolved` DNS stub listener is disabled on the master so Blocky can bind to `:53`.
+
 ## Cluster bootstrap notes
 - The k3s token is read from `/etc/k3s/token`.
 - A placeholder token is created by tmpfiles rules in the k3s modules.
@@ -69,4 +76,3 @@ nix develop
 - Update k3s flags in `modules/k3s/server.nix` or `modules/k3s/agent.nix`.
 - If you want DHCP instead of static IPs, flip the commented settings in
   `modules/networking.nix`.
-_

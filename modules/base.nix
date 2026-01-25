@@ -15,6 +15,8 @@
     sounds.enable = false;
   };
 
+  services.resolved.settings.Resolve.MulticastDNS = "yes";
+
   services.openssh.enable = true;
   services.openssh.settings = {
     PasswordAuthentication = false;
@@ -50,7 +52,8 @@
     useUserPackages = true;
 
     users.admin = { ... }: {
-      home.stateVersion = "23.05";
+      home.stateVersion = "25.05";
+      home.enableNixpkgsReleaseCheck = false;
 
       # Headless images don't need per-user font discovery/caching.
       fonts.fontconfig.enable = false;
