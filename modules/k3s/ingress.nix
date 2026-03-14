@@ -66,6 +66,31 @@ in
             replicaCount: 2
             nodeSelector:
               k8nix.io/role: worker
+            affinity:
+              podAntiAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/name: ingress-nginx
+                        app.kubernetes.io/component: controller
+                        app.kubernetes.io/instance: ingress-nginx
+                    topologyKey: kubernetes.io/hostname
+            topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: ScheduleAnyway
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: ingress-nginx
+                  app.kubernetes.io/component: controller
+                  app.kubernetes.io/instance: ingress-nginx
+            config:
+              use-gzip: "true"
+              gzip-level: "5"
+              gzip-min-length: "1024"
+              gzip-types: "text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml"
             ingressClassResource:
               name: ${cfg.ingressClassName}
               enabled: true
