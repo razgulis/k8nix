@@ -22,7 +22,7 @@
 
   k8nix.ingress = {
     enable = true;
-    loadBalancerIP = "192.168.1.206";
+    loadBalancerIP = "192.168.1.254";
   };
 
   networking.nameservers = [ "127.0.0.1" ];

@@ -37,9 +37,11 @@
       customDNS = {
         customTTL = "1h";
         mapping = {
-          "gitlab.k8nix" = "192.168.1.206";
-          "grafana.k8nix" = "192.168.1.206";
-          "prometheus.k8nix" = "192.168.1.206";
+          "gitlab.k8nix" = "192.168.1.254";
+          "grafana.k8nix" = "192.168.1.254";
+          "prometheus.k8nix" = "192.168.1.254";
+          "minio.k8nix" = "192.168.1.254";
+          "minio-api.k8nix" = "192.168.1.254";
         };
       };
     };

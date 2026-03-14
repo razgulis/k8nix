@@ -9,7 +9,7 @@ in
 
     loadBalancerIP = lib.mkOption {
       type = lib.types.str;
-      default = "192.168.1.206";
+      default = "192.168.1.254";
       description = ''
         Stable LAN IP announced by MetalLB and used by ingress-nginx for
         host-based HTTP routing.
