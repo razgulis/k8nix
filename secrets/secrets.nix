@@ -17,8 +17,9 @@ let
     hosts."pi-master-1"
     hosts."pi-worker-1"
     hosts."pi-worker-2"
+    hosts."pi-worker-3"
+    hosts."pi-worker-4"
     hosts."r630-storage"
-#    hosts."pi-worker-3"
   ];
 in
 {
