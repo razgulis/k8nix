@@ -31,6 +31,11 @@
           replicated:
             mayastor:
               enabled: false
+        # Keep only the storage engine components; disable bundled logging stack.
+        loki:
+          enabled: false
+        alloy:
+          enabled: false
         zfs-localpv:
           zfs:
             # On NixOS, zfs is provided via /run/current-system/sw/bin.
