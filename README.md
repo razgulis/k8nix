@@ -60,6 +60,32 @@ Note: flash to the whole device (e.g. `/dev/sda`), not a partition (e.g. `/dev/s
 - rebuild the flake you are currently on:
   `sudo nixos-rebuild switch --flake .#pi-worker-X`
 
+## Roll out to multiple nodes
+Use `scripts/rebuild-nodes.sh` from your dev machine to update several nodes in one run.
+
+Examples:
+
+```bash
+# Rebuild all default nodes (master, workers, storage)
+scripts/rebuild-nodes.sh
+
+# Rebuild only specific nodes
+scripts/rebuild-nodes.sh pi-worker-3 pi-worker-4
+
+# Pull a specific branch before rebuilding
+scripts/rebuild-nodes.sh --branch master
+
+# If a node has local repo drift, discard changes and continue
+scripts/rebuild-nodes.sh --discard-local-changes pi-worker-3 pi-worker-4
+```
+
+The script:
+- SSHes into each node as `admin` (override with `SSH_USER`).
+- Checks that the remote repo is clean.
+- Can explicitly discard remote local changes with `--discard-local-changes`.
+- Runs `git pull --ff-only` (unless `--no-pull`).
+- Runs `sudo nixos-rebuild switch --flake .#<node-name>`.
+
 ## SSH access
 - Default user is `admin` (key-based auth; password login is disabled). Update the SSH key and Home Manager defaults in `modules/base.nix`.
 
