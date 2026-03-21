@@ -3,8 +3,10 @@
   imports = [
     ../../modules/blocky
     ../../modules/k3s/argocd.nix
+    ../../modules/k3s/external-secrets.nix
     ../../modules/k3s/ingress.nix
     ../../modules/k3s/openebs-zfs.nix
+    ../../modules/k3s/vault.nix
   ];
 
   k8nix.argocd = {

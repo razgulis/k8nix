@@ -264,6 +264,77 @@ nix build .#nixosConfigurations.r630-storage.config.system.build.toplevel
 - Define app workloads (PostgreSQL/TimescaleDB/pgvector and MinIO manifests/Helm values) in your Argo app repo (`k8nix-apps` or in-cluster GitLab app repo).
 - MCP service is intentionally deferred for now.
 
+### Vault + External Secrets (no plaintext app passwords in Git)
+- `modules/k3s/vault.nix` installs HashiCorp Vault via k3s `HelmChart`.
+- `modules/k3s/external-secrets.nix` installs External Secrets Operator via k3s `HelmChart`.
+- `hosts/pi-master-1/default.nix` imports both modules.
+- `k8nix-apps/apps/ai-data/external-secrets.yaml` defines:
+  - ServiceAccount + SecretStore (`vault-ai-data`)
+  - ExternalSecrets that materialize `minio-ai-auth` and `postgres-ai-auth`
+- `k8nix-apps/apps/ai-data/minio.yaml` and `postgres.yaml` no longer store password values.
+
+One-time bootstrap after rebuilding `pi-master-1` and waiting for `vault-0`:
+
+```bash
+# 1) Initialize and unseal vault (save output securely; do not commit it).
+kubectl -n vault exec -it vault-0 -- vault operator init
+kubectl -n vault exec -it vault-0 -- vault operator unseal <unseal-key-1>
+kubectl -n vault exec -it vault-0 -- vault operator unseal <unseal-key-2>
+kubectl -n vault exec -it vault-0 -- vault operator unseal <unseal-key-3>
+
+# 2) Log in with the initial root token.
+kubectl -n vault exec -it vault-0 -- sh -lc 'vault login <root-token>'
+
+# 3) Enable KV v2 and Kubernetes auth.
+kubectl -n vault exec -it vault-0 -- sh -lc 'vault secrets enable -path=kv kv-v2 || true'
+kubectl -n vault exec -it vault-0 -- sh -lc 'vault auth enable kubernetes || true'
+kubectl -n vault exec -it vault-0 -- sh -lc '\''vault write auth/kubernetes/config \
+  kubernetes_host="https://kubernetes.default.svc:443" \
+  token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+  kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'\''
+
+# 4) Create policy and role for ai-data External Secrets SA.
+kubectl -n vault exec -it vault-0 -- sh -lc "cat >/tmp/ai-data-policy.hcl <<'EOF'
+path \"kv/data/ai-data/*\" {
+  capabilities = [\"read\"]
+}
+EOF
+vault policy write ai-data-read /tmp/ai-data-policy.hcl"
+
+kubectl -n vault exec -it vault-0 -- sh -lc 'vault write auth/kubernetes/role/ai-data-external-secrets \
+  bound_service_account_names=external-secrets-vault \
+  bound_service_account_namespaces=ai-data \
+  policies=ai-data-read \
+  ttl=24h'
+
+# 5) Write initial application credentials in Vault.
+MINIO_PASS="$(openssl rand -hex 32)"
+PG_PASS="$(openssl rand -hex 32)"
+
+kubectl -n vault exec -it vault-0 -- sh -lc "vault kv put kv/ai-data/minio \
+  MINIO_ROOT_USER=minioadmin \
+  MINIO_ROOT_PASSWORD=${MINIO_PASS}"
+
+kubectl -n vault exec -it vault-0 -- sh -lc "vault kv put kv/ai-data/postgres \
+  POSTGRES_DB=signaldb \
+  POSTGRES_USER=ai_app \
+  POSTGRES_PASSWORD=${PG_PASS}"
+```
+
+Password rotation (no Git changes required):
+
+```bash
+# Rotate in Vault.
+NEW_MINIO_PASS="$(openssl rand -hex 32)"
+NEW_PG_PASS="$(openssl rand -hex 32)"
+kubectl -n vault exec -it vault-0 -- sh -lc "vault kv patch kv/ai-data/minio MINIO_ROOT_PASSWORD=${NEW_MINIO_PASS}"
+kubectl -n vault exec -it vault-0 -- sh -lc "vault kv patch kv/ai-data/postgres POSTGRES_PASSWORD=${NEW_PG_PASS}"
+
+# Force workload restarts so env vars pick up the new values.
+kubectl -n ai-data rollout restart sts/minio-ai
+kubectl -n ai-data rollout restart sts/postgres-ai
+```
+
 ### Ensure ZFS PV datasets exist (day-2 on existing installs)
 On already-installed machines, `nixos-rebuild switch` will not create missing
 ZFS datasets from `disko.nix`. Run the following once on `r630-storage`:
