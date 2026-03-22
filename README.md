@@ -86,6 +86,33 @@ The script:
 - Runs `git pull --ff-only` (unless `--no-pull`).
 - Runs `sudo nixos-rebuild switch --flake .#<node-name>`.
 
+## Infrastructure health check
+Use `scripts/check-infra.sh` to validate cluster health after restarts or maintenance.
+
+It checks:
+- API reachability and node readiness.
+- Required namespaces and storage classes.
+- Deployment/StatefulSet/DaemonSet readiness in key namespaces.
+- Argo CD app sync/health.
+- External Secrets readiness.
+- Vault unsealed state.
+- Global pod readiness/status sweep.
+
+Examples:
+
+```bash
+# Default checks
+scripts/check-infra.sh
+
+# Verify specific expected nodes are all Ready
+scripts/check-infra.sh --expected-nodes pi-master-1,pi-worker-1,pi-worker-2,pi-worker-3,pi-worker-4,r630-storage
+
+# Skip Argo checks (if Argo is intentionally down for maintenance)
+scripts/check-infra.sh --no-argo-app-check
+```
+
+The script exits non-zero on failures so it can be used in automation.
+
 ## SSH access
 - Default user is `admin` (key-based auth; password login is disabled). Update the SSH key and Home Manager defaults in `modules/base.nix`.
 
