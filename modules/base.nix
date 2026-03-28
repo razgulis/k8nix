@@ -30,7 +30,6 @@
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOW8xWUfi/PtattP6DK+kQ74ynKikXPWx+OPkPN73ROG sergei.razgulin@gmail.com"
-      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIItCttDU/KK5EgAfSiKLkH1lxu1di1nzS96IWozjBXFnAAAABHNzaDo= ssh:"
       "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIOPlUfZEZKZzZOnROBmYiYsVONPqG/hIU3Tjf3rM1fxjAAAAEXNzaDprOG5peC1jbHVzdGVy sergei@tortuga"
     ];
   };
