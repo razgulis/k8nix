@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../k8nix-apps"
+		},
+		{
+			"path": "../k8nix-services"
+		}
+	],
+	"settings": {}
+}
