@@ -97,6 +97,7 @@ It checks:
 - External Secrets readiness.
 - Vault unsealed state.
 - Global pod readiness/status sweep.
+- Node code drift: whether each node is running the latest local flake target, plus which nodes would change on rebuild.
 
 Examples:
 
@@ -109,6 +110,9 @@ scripts/check-infra.sh --expected-nodes pi-master-1,pi-worker-1,pi-worker-2,pi-w
 
 # Skip Argo checks (if Argo is intentionally down for maintenance)
 scripts/check-infra.sh --no-argo-app-check
+
+# Skip node code/drift checks (if SSH access to nodes is not available)
+scripts/check-infra.sh --no-node-version-check
 ```
 
 The script exits non-zero on failures so it can be used in automation.
